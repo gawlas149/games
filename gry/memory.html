@@ -1,0 +1,260 @@
+<html>
+  <head>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        user-select: none;
+      }
+      body {
+        background: linear-gradient(
+          rgb(255, 255, 255) 0%,
+          rgb(173, 173, 173) 50%,
+          rgb(88, 88, 88) 100%
+        );
+      }
+      #gameArea {
+        height: 45rem;
+        width: 45rem;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #gameModeBar {
+        height: 8rem;
+        display: flex;
+        justify-content: space-between;
+      }
+      #moves {
+        height: 4rem;
+        font-size: 1.6rem;
+        position: absolute;
+        bottom: 2rem;
+        left: 3rem;
+      }
+      #counter {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 3rem;
+      }
+      .gameModeButton {
+        height: 3rem;
+        width: 6rem;
+        font-size: 1.3rem;
+        background-color: rgb(184, 114, 114);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .gameModeButton:hover {
+        background-color: rgb(56, 34, 34);
+      }
+      .card {
+        float: left;
+        background-color: rgb(65, 95, 95);
+        text-align: center;
+      }
+      .card:hover {
+        background-color: rgb(45, 68, 65);
+      }
+      .chosen {
+        background-color: rgb(116, 68, 68);
+      }
+      #tooltip {
+        position: absolute;
+        font-size: 3rem;
+        right: 30px;
+        bottom: 30px;
+        width: 3.5rem;
+        height: 3.5rem;
+        background-color: rgb(61, 61, 61);
+        border: 3px solid black;
+        text-align: center;
+        border-radius: 50%;
+      }
+      #tooltipText {
+        visibility: hidden;
+        position: absolute;
+        background-color: black;
+        border-radius: 6px;
+        z-index: 1;
+        color: white;
+        top: -20px;
+        left: -210px;
+        width: 200px;
+        font-size: 1rem;
+        text-align: left;
+      }
+      #tooltip:hover #tooltiptext {
+        visibility: visible;
+      }
+    </style>
+    <title>Memory Filip Gawlas</title>
+  </head>
+  <body>
+    <div id="gameModeBar">
+      <div class="gameModeButton">Very Easy</div>
+      <div class="gameModeButton">Easy</div>
+      <div class="gameModeButton chosen">Normal</div>
+      <div class="gameModeButton">Hard</div>
+      <div class="gameModeButton">Very Hard</div>
+      <div class="gameModeButton">Hardcore</div>
+      <div class="gameModeButton">Imposibble</div>
+    </div>
+    <div id="gameArea"></div>
+    <div id="moves">
+      Moves:
+      <div id="counter"></div>
+    </div>
+    <div id="tooltip">
+      i<span id="tooltipText"
+        >Celem gry jest dopasowanie odpowiadających sobie kart.</span
+      >
+    </div>
+    <script>
+      const gameArea = document.getElementById("gameArea");
+      const gameModeButtons = document.getElementsByClassName("gameModeButton");
+      const counter = document.getElementById("counter");
+      let indexOfGameMode;
+
+      let gameTableSize = 4; //2 4 6 8 10 12 14
+      let gameTable;
+
+      const gameAreaStyle = window.getComputedStyle(gameArea);
+      let cardMargin;
+      let cardWidth;
+      let cardHeight;
+      let cards;
+      let cardFontSize;
+      let picked = 0;
+
+      let firstCard;
+      let firstCardIndex;
+      let secondCard;
+      let secondCardIndex;
+
+      let moves;
+
+      function gameModeUpdateArea() {
+        gameTable = [];
+        gameArea.innerHTML = "";
+        picked = 0;
+        moves = 0;
+        counter.innerText = 0;
+        for (let i = 0; i < gameModeButtons.length; i++) {
+          gameModeButtons[i].classList.remove("chosen");
+        }
+        if (gameTableSize == 2) {
+          cardMargin = 30;
+          cardFontSize = 18;
+          indexOfGameMode = 0;
+        } else if (gameTableSize == 4) {
+          cardMargin = 25;
+          cardFontSize = 10;
+          indexOfGameMode = 1;
+        } else if (gameTableSize == 6) {
+          cardMargin = 20;
+          cardFontSize = 5;
+          indexOfGameMode = 2;
+        } else if (gameTableSize == 8) {
+          cardMargin = 15;
+          cardFontSize = 4;
+          indexOfGameMode = 3;
+        } else if (gameTableSize == 10) {
+          cardMargin = 10;
+          cardFontSize = 3;
+          indexOfGameMode = 4;
+        } else if (gameTableSize == 12) {
+          cardMargin = 8;
+          cardFontSize = 3;
+          indexOfGameMode = 5;
+        } else {
+          cardMargin = 6;
+          cardFontSize = 2;
+          indexOfGameMode = 6;
+        }
+        gameModeButtons[indexOfGameMode].classList.add("chosen");
+
+        cardHeight =
+          parseFloat(gameAreaStyle.height) / gameTableSize - cardMargin;
+        cardWidth =
+          parseFloat(gameAreaStyle.width) / gameTableSize - cardMargin;
+
+        for (let i = 0; i < gameTableSize; i++) {
+          for (let ii = 0; ii < gameTableSize; ii++) {
+            gameArea.innerHTML += `<div class="card" style="width:${cardWidth};height:${cardHeight};margin-right:${cardMargin};margin-top:${cardMargin};font-size:${cardFontSize}rem"></div>`;
+            gameTable.push("x");
+          }
+        }
+
+        for (let i = 0; i < gameTable.length / 2; i++) {
+          while (true) {
+            a = Math.floor(Math.random() * gameTable.length);
+            if (gameTable[a] == "x") {
+              gameTable[a] = i;
+              break;
+            }
+          }
+          while (true) {
+            b = Math.floor(Math.random() * gameTable.length);
+            if (gameTable[b] == "x") {
+              gameTable[b] = i;
+              break;
+            }
+          }
+        }
+
+        for (let i = 0; i < cards.length; i++) {
+          cards[i].onclick = function() {
+            if (picked == 0 && cards[i].innerText == "") {
+              firstCardPick(i);
+              picked = 1;
+            } else if (
+              picked == 1 &&
+              firstCardIndex != i &&
+              cards[i].innerText == ""
+            ) {
+              secondCardPick(i);
+              picked = 2;
+              setTimeout(function() {
+                picked = 0;
+              }, 1010);
+            }
+          };
+        }
+      }
+
+      cards = document.getElementsByClassName("card");
+      function firstCardPick(i) {
+        cards[i].innerText = gameTable[i] + 1;
+        firstCardIndex = i;
+        firstCard = gameTable[i];
+      }
+
+      function secondCardPick(i) {
+        moves += 1;
+        counter.innerText = moves;
+        cards[i].innerText = gameTable[i] + 1;
+        secondCardIndex = i;
+        secondCard = gameTable[i];
+        if (firstCard != secondCard) {
+          setTimeout(function() {
+            cards[firstCardIndex].innerText = "";
+            cards[secondCardIndex].innerText = "";
+          }, 1000);
+        }
+      }
+
+      for (let i = 0; i < gameModeButtons.length; i++) {
+        gameModeButtons[i].onclick = function() {
+          gameTableSize = (i + 1) * 2;
+          gameModeUpdateArea();
+        };
+      }
+
+      gameModeUpdateArea();
+    </script>
+  </body>
+</html>
